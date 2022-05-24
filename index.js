@@ -1,4 +1,8 @@
 const express = require("express")
+const path = require("path")
+const { engine } = require('express-handlebars');
+
+
 
 // MIDDLEWARE
 // any function that executes after receiving a request and before sending a response is a middleware
@@ -10,21 +14,29 @@ const express = require("express")
 
 const app = express();
 
+
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', './views');
+
 var bodyParser = require('body-parser')
 
 // app.use(bodyParser.urlencoded({ extended: false }))
 // app.use(bodyParser.json())
 
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, "../randColor")));
+
 // app.use(<middleware>)
 // global middleware
 
 // app.use(ab)
 
-function ab(req, res, next) {
-    console.log("i am from middleware");
-    next();
-}
+// function ab(req, res, next) {
+//     console.log("i am from middleware");
+//     next();
+// }
 
 app.use((req, res, next) => {
     // req.body = { "random": "random" }
@@ -36,10 +48,10 @@ app.use((req, res, next) => {
     console.log("after");
 })
 
-app.get("/", ab, (req, res) => {
-    console.log("hello");
-    res.send("text me");
-})
+// app.get("/", ab, (req, res) => {
+//     console.log("hello");
+//     res.send("text me");
+// })
 
 app.get("/home", (req, res) => {
     console.log("home");
@@ -57,13 +69,49 @@ app.post("/signup", (req, res) => {
 
     // user = user();
     // user.age = age ;
-    
+
     console.log({ name });
     console.log({ age });
     console.log({ rest });
 
     console.log("signup");
     res.send("signup");
+})
+
+app.get("/html", (req, res) => {
+
+    // res.send("test")
+
+    res.sendFile(path.join(__dirname, "../randColor/html/index.html"));
+
+
+})
+
+app.get("/dynamichtml", (req, res) => {
+
+    // User::find(1) /// {id:1, name:"afsdf",f........}
+
+    res.render('about', {
+        layout: "side",
+        name: "John",
+        isAdmin:false,
+        arr: [{
+            name: "John",
+        },
+        {
+            name: "John2",
+        },
+        {
+            name: "John3",
+        }
+
+        ]
+    });
+    // res.send("test")
+
+    // res.sendFile(path.join(__dirname, "../randColor/html/index.html"));
+
+
 })
 
 app.use((req, res, next) => {
