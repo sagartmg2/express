@@ -10,6 +10,7 @@ const { engine } = require('express-handlebars');
 // it has capability to use / alter both request and response
 
 // next => move to the next middleware in line
+var jwt = require('jsonwebtoken');
 
 
 const app = express();
@@ -94,7 +95,7 @@ app.get("/dynamichtml", (req, res) => {
     res.render('about', {
         layout: "side",
         name: "John",
-        isAdmin:false,
+        isAdmin: false,
         arr: [{
             name: "John",
         },
@@ -114,6 +115,78 @@ app.get("/dynamichtml", (req, res) => {
 
 })
 
+app.get("/cookie", (req, res) => {
+
+
+    // true
+    // saves in database , memory
+
+    res.cookie("key", "value");
+    res.send("sent")
+
+
+})
+
+app.get("/another-cookie", (req, res) => {
+
+    // true
+    // saves in database , memory
+
+    // res.cookie("key","value");
+    res.send("sent")
+
+
+})
+
+
+require('dotenv').config();
+// console.log( );
+app.post("/login",(req,res) => {
+
+    const{email,password}  =  req.body
+    if(email == "testing@testing.com" && password== "password"){
+
+       
+        var token = jwt.sign({ id: 1,role:1,username:"name" }, process.env.SECRET);
+
+        res.send({
+            status:"success",
+            token,
+        })
+    }else{
+        res.send("wrong cred")
+    }
+})
+
+
+function authenticate(req,res,next){
+    console.log(req.headers);
+    const token = req.headers.authorization.split(" ")[1];
+    console.log({token});
+
+    try{
+        var decoded = jwt.verify(token, process.env.SECRET)
+        if(decoded){
+            next()
+        }else{
+            res.status(401).send("unauthenticated")
+        }
+    }catch(err){
+        res.status(401).send("unauthenticated")
+
+    }
+    // console.log(decoded);
+}
+
+
+app.get("/protected",authenticate,(req,res) => {
+
+
+    res.send("protected")
+})
+
+
+
 app.use((req, res, next) => {
     res.status(404).send("404 page not found")
 })
@@ -130,5 +203,27 @@ app.listen(8000, () => {
 
 
 // this is feature for naya branch
+
+
+
+
+// Authentication
+// // 401
+//  - stateful
+
+        //   login -> server checks for credentilas > stores session details in server itself > session_id as setCookie(session_id)
+        // we can do so using session and cookie
+        // browser sends the cookie with session_id 
+
+
+//  - stateless
+        // login -> server veries -> does not store any data 
+        // instead sends a token  // encypted string with signed secret
+        // manually have to send token on every request ourself as authorization header
+        // 
+
+
+// Authorization
+//      // 403
 
 
